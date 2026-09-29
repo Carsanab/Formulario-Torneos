@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyuR5W66pn0WgWRHMWijHCI-CFkTYSn_r55svmY07ghBsj6yrMjL4lXOYBZp4l8Xw0/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbz0GR3bcvVC-pUzmOjw2NUN71H3S-91ClSwfWfePkAKaujnyo3biYOo9I7oWFAVIGWO/exec";
 
 let filaActual = null;
 let inscripcionesAbiertas = true;
@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", async function() {
   crearContenedorToast();
   crearOverlayProcesando();
   await cargarConfiguracion();
+  manejarRetornoMP();
 });
 
 function crearContenedorToast() {
@@ -58,7 +59,7 @@ function mostrarToast(tipo, titulo, mensaje, duracion = 4000) {
   const container = document.getElementById("toastContainer");
   if (!container) return;
 
-  const iconos = { success: "✅", error: "❌", warning: "️", info: "ℹ️" };
+  const iconos = { success: "✅", error: "❌", warning: "⚠️", info: "ℹ️" };
   const titulosDefault = { success: "¡Éxito!", error: "Error", warning: "Atención", info: "Información" };
 
   const toast = document.createElement("div");
@@ -239,14 +240,14 @@ async function buscar() {
 
 function cargarDatos(datos) {
   const docEl = document.getElementById("documento");
-  const nombreCompletoEl = document.getElementById("nombreCompleto");
+  const nombreEl = document.getElementById("nombre");
+  const apellidoEl = document.getElementById("apellido");
   const fechaEl = document.getElementById("fechaNacimiento");
   const datosGimnasta = document.getElementById("datosGimnasta");
   
   if (docEl) docEl.value = datos.documento || "";
-  
-  const nombreCompleto = `${datos.nombre || ""} ${datos.apellido || ""}`.trim();
-  if (nombreCompletoEl) nombreCompletoEl.value = nombreCompleto;
+  if (nombreEl) nombreEl.value = datos.nombre || "";
+  if (apellidoEl) apellidoEl.value = datos.apellido || "";
   
   const fechaNormalizada = normalizarFecha(datos.fechaNacimiento);
   if (fechaEl) fechaEl.value = fechaNormalizada;
@@ -268,9 +269,12 @@ function cargarDatos(datos) {
     actualizarCategoriaVisual("");
   }
   
+  // Guardamos ambos por separado y también juntos para Mercado Pago
   datosGimnastaActual = {
     documento: datos.documento,
-    nombreCompleto: nombreCompleto,
+    nombre: datos.nombre,
+    apellido: datos.apellido,
+    nombreCompleto: `${datos.nombre || ""} ${datos.apellido || ""}`.trim(),
     categoria: determinarCategoriaPorEdad(fechaNormalizada),
     fechaNacimiento: fechaNormalizada
   };
@@ -411,12 +415,7 @@ async function guardar() {
   const radioSi = document.querySelector('input[name="puedeAsistir"][value="SI"]');
   const radioNo = document.querySelector('input[name="puedeAsistir"][value="NO"]');
   
-  if (!radioSi && !radioNo) {
-    mostrarToast("error", "Error", "No se encontró el selector de asistencia.");
-    return;
-  }
-  
-  if (!radioSi.checked && !radioNo.checked) {
+  if (!radioSi || !radioNo || (!radioSi.checked && !radioNo.checked)) {
     mostrarToast("error", "Campo requerido", "Debe seleccionar si puede asistir o no.");
     return;
   }
@@ -427,20 +426,13 @@ async function guardar() {
     return;
   }
 
-  const nombreCompleto = document.getElementById("nombreCompleto").value.trim();
+  // LEEMOS LOS DOS CAMPOS POR SEPARADO
+  const nombre = document.getElementById("nombre").value.trim();
+  const apellido = document.getElementById("apellido").value.trim();
   const fechaNacimiento = document.getElementById("fechaNacimiento").value;
 
-  if (!nombreCompleto || !fechaNacimiento) {
-    mostrarToast("error", "Datos incompletos", "Complete todos los datos de la gimnasta.");
-    return;
-  }
-
-  const partes = nombreCompleto.split(" ");
-  const apellido = partes.pop();
-  const nombre = partes.join(" ");
-
-  if (!nombre || !apellido) {
-    mostrarToast("error", "Datos incompletos", "Ingrese nombre y apellido completos.");
+  if (!nombre || !apellido || !fechaNacimiento) {
+    mostrarToast("error", "Datos incompletos", "Complete nombre, apellido y fecha de nacimiento.");
     return;
   }
 
@@ -457,9 +449,12 @@ async function guardar() {
     documento, nombre, apellido, fechaNacimiento, puedeAsistir, consentimiento: true
   };
 
+  // Guardamos para el pago
   datosGimnastaActual = {
     documento,
-    nombreCompleto,
+    nombre,
+    apellido,
+    nombreCompleto: `${nombre} ${apellido}`,
     categoria,
     fechaNacimiento
   };
@@ -476,7 +471,7 @@ async function guardar() {
     }
 
     mostrarVistaConfirmacion({
-      nombreCompleto,
+      nombreCompleto: `${nombre} ${apellido}`,
       documento,
       fechaNacimiento,
       categoria,
@@ -545,15 +540,17 @@ function volverAlInicio() {
   const vista = document.getElementById("vistaConfirmacion");
   const formCard = document.getElementById("formCard");
   const formulario = document.getElementById("formulario");
-  const datosGimnasta = document.getElementById("datosGimnasta");
   const mensajeBusqueda = document.getElementById("mensajeBusqueda");
   const docInput = document.getElementById("documento");
+  const nombre = document.getElementById("nombre");
+  const apellido = document.getElementById("apellido");
   
   if (vista) vista.classList.add("hidden");
   if (formCard) formCard.classList.remove("hidden");
   if (docInput) docInput.value = "";
+  if (nombre) nombre.value = "";
+  if (apellido) apellido.value = "";
   if (formulario) formulario.classList.add("hidden");
-  if (datosGimnasta) datosGimnasta.classList.add("hidden");
   if (mensajeBusqueda) {
     mensajeBusqueda.innerHTML = "";
     mensajeBusqueda.className = "";
@@ -573,7 +570,7 @@ function mostrarPago(estado) {
     elemento.innerHTML = "🟢 PAGO ACREDITADO";
   } else {
     elemento.classList.remove("pagado");
-    elemento.innerHTML = " PAGO PENDIENTE";
+    elemento.innerHTML = "🟡 PAGO PENDIENTE";
   }
 }
 
@@ -651,21 +648,21 @@ function manejarRetornoMP() {
 }
 
 function limpiarFormulario() {
-  const nombreCompleto = document.getElementById("nombreCompleto");
+  const nombre = document.getElementById("nombre");
+  const apellido = document.getElementById("apellido");
   const fecha = document.getElementById("fechaNacimiento");
   const consentimiento = document.getElementById("consentimiento");
   const datosGimnasta = document.getElementById("datosGimnasta");
-  const pago = document.getElementById("pago");
   const tarjeta = document.getElementById("tarjetaEstadoPago");
   
-  if (nombreCompleto) nombreCompleto.value = "";
+  if (nombre) nombre.value = "";
+  if (apellido) apellido.value = "";
   if (fecha) fecha.value = "";
   if (consentimiento) consentimiento.checked = false;
   
   document.querySelectorAll('input[name="puedeAsistir"]').forEach(r => r.checked = false);
   
   if (datosGimnasta) datosGimnasta.classList.add("hidden");
-  if (pago) pago.classList.add("hidden");
   if (tarjeta) tarjeta.classList.add("hidden");
   
   actualizarCategoriaVisual("");
