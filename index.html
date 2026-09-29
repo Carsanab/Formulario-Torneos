@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Confirmación de asistencia</title>
+  <title>Confirmación de Asistencia</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -22,31 +22,75 @@
     </div>
 
     <div id="contenidoPrincipal">
+      
+      <!-- HEADER: SOLO LOGO -->
       <div class="header">
-        
-        <!-- LOGO Y SLOGAN ESTÁTICOS -->
         <img src="images/logo.png" class="logo" alt="Logo">
-        
-
-        <!-- TÍTULOS DINÁMICOS -->
-        <div id="tituloTorneo" class="titulo-torneo"></div>
-        <div id="club" class="club"></div>
-        <div id="titulo3" class="titulo-3"></div>
-        <div id="fechaEvento" class="fecha-evento"></div>
-        
-        <div class="separador"></div>
-        
-        <div id="titulo4" class="titulo-4"></div>
       </div>
 
-      <!-- FORMULARIO DE INSCRIPCIÓN -->
-      <div id="formCard" class="form-card">
-        <div class="section-title">Confirmación de asistencia</div>
+      <!-- SECCIÓN DE INFORMACIÓN DEL EVENTO -->
+      <div class="info-evento">
+        
+        <!-- NOMBRE DEL TORNEO (DESTACADO) -->
+        <div class="info-item info-item-torneo">
+          <div class="info-icono">🏆</div>
+          <div class="info-contenido">
+            <div class="info-label">Torneo</div>
+            <div class="info-valor info-valor-torneo" id="infoTorneo">-</div>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-icono">📍</div>
+          <div class="info-contenido">
+            <div class="info-label">Lugar</div>
+            <div class="info-valor" id="infoClub">-</div>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-icono">📅</div>
+          <div class="info-contenido">
+            <div class="info-label">Fecha</div>
+            <div class="info-valor" id="infoFechaEvento">-</div>
+          </div>
+        </div>
+
+        <div class="info-item info-item-info">
+          <div class="info-icono">️ℹ️</div>
+          <div class="info-contenido">
+            <div class="info-label">Información</div>
+            <p class="info-parrafo" id="infoTitulo3"></p>
+            <p class="info-parrafo" id="infoTitulo4"></p>
+          </div>
+        </div>
+
+        <div class="info-item info-item-limite">
+          <div class="info-icono">⏰</div>
+          <div class="info-contenido">
+            <div class="info-label">Fecha límite de confirmación y pago</div>
+            <div class="info-valor info-valor-limite" id="infoFechaLimite">-</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SECCIÓN DE CONFIRMACIÓN -->
+      <div class="form-card">
+        <div class="section-title">Confirmación de Asistencia</div>
         <div class="section-description">Para comenzar, ingrese el número de documento de la gimnasta.</div>
 
         <div class="field">
           <label for="documento">Número de documento</label>
-          <input type="text" id="documento" placeholder="Ingrese el DNI" inputmode="numeric">
+          <input 
+            type="text" 
+            id="documento" 
+            placeholder="Ingrese solo números" 
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="10"
+            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+          >
           <button type="button" class="btn-buscar" onclick="buscar()">BUSCAR GIMNASTA</button>
           <div id="mensajeBusqueda"></div>
         </div>
@@ -72,7 +116,7 @@
 
           <div id="datosGimnasta" class="hidden">
             
-            <!-- TARJETA DE ESTADO DE PAGO (al buscar existente) -->
+            <!-- TARJETA DE ESTADO DE PAGO -->
             <div id="tarjetaEstadoPago" class="tarjeta-estado-pago hidden">
               <div class="estado-header">
                 <div class="estado-icon" id="estadoIcon">💳</div>
@@ -103,13 +147,8 @@
             <div class="section-description">Verifique los datos y complete o corrija la información necesaria.</div>
 
             <div class="field">
-              <label for="nombre">Nombre</label>
-              <input type="text" id="nombre" placeholder="Nombre de la gimnasta">
-            </div>
-
-            <div class="field">
-              <label for="apellido">Apellido</label>
-              <input type="text" id="apellido" placeholder="Apellido de la gimnasta">
+              <label for="nombreCompleto">Nombre y apellido</label>
+              <input type="text" id="nombreCompleto" placeholder="Ingrese nombre y apellido completo">
             </div>
 
             <div class="field">
@@ -122,12 +161,30 @@
               <div class="section-title">Información importante</div>
               <div class="section-description">Antes de confirmar la participación, lea atentamente las siguientes indicaciones.</div>
               
-              <div class="indicacion"><div class="indicacion-titulo">👕 Vestimenta</div><div class="indicacion-texto">La gimnasta deberá presentarse con la vestimenta indicada por la organización.</div></div>
-              <div class="indicacion"><div class="indicacion-titulo">💇 Peinado</div><div class="indicacion-texto">Deberá presentarse con el peinado indicado para la competencia.</div></div>
-              <div class="indicacion"><div class="indicacion-titulo">💧 Botella de agua</div><div class="indicacion-texto">Cada gimnasta deberá llevar su propia botella de agua.</div></div>
-              <div class="indicacion"><div class="indicacion-titulo"> Manta</div><div class="indicacion-texto">Se recomienda llevar una manta en caso de frío.</div></div>
-              <div class="indicacion"><div class="indicacion-titulo"> Alimentación</div><div class="indicacion-texto">La gimnasta deberá comer aproximadamente una hora antes de la competencia.</div></div>
-              <div class="indicacion"><div class="indicacion-titulo">📅 Fecha límite</div><div class="indicacion-texto">La inscripción y el pago deberán realizarse antes de la fecha límite establecida.</div></div>
+              <div class="indicacion">
+                <div class="indicacion-titulo">👕 Vestimenta</div>
+                <div class="indicacion-texto">La gimnasta deberá presentarse con la vestimenta indicada por la organización.</div>
+              </div>
+              <div class="indicacion">
+                <div class="indicacion-titulo">💇 Peinado</div>
+                <div class="indicacion-texto">Deberá presentarse con el peinado indicado para la competencia.</div>
+              </div>
+              <div class="indicacion">
+                <div class="indicacion-titulo">💧 Botella de agua</div>
+                <div class="indicacion-texto">Cada gimnasta deberá llevar su propia botella de agua.</div>
+              </div>
+              <div class="indicacion">
+                <div class="indicacion-titulo">🧣 Manta</div>
+                <div class="indicacion-texto">Se recomienda llevar una manta en caso de frío.</div>
+              </div>
+              <div class="indicacion">
+                <div class="indicacion-titulo">🍎 Alimentación</div>
+                <div class="indicacion-texto">La gimnasta deberá comer aproximadamente una hora antes de la competencia.</div>
+              </div>
+              <div class="indicacion">
+                <div class="indicacion-titulo">📅 Fecha límite</div>
+                <div class="indicacion-texto">La inscripción y el pago deberán realizarse antes de la fecha límite establecida.</div>
+              </div>
             </div>
 
             <div class="consentimiento">
@@ -142,7 +199,7 @@
         </div>
       </div>
 
-      <!-- VISTA DE CONFIRMACIÓN (después de guardar) -->
+      <!-- VISTA DE CONFIRMACIÓN -->
       <div id="vistaConfirmacion" class="vista-confirmacion hidden">
         
         <div class="confirmacion-header">
@@ -153,7 +210,7 @@
 
         <div class="confirmacion-datos">
           <div class="dato-fila">
-            <div class="dato-label">Nombre completo</div>
+            <div class="dato-label">Nombre y apellido</div>
             <div class="dato-valor" id="confNombreCompleto">-</div>
           </div>
           
@@ -195,11 +252,11 @@
         </div>
 
         <button type="button" class="btn-volver" onclick="volverAlInicio()">
-           REALIZAR OTRA CONSULTA
+          🔍 REALIZAR OTRA CONSULTA
         </button>
       </div>
 
-      <div class="footer">Gimnasia Artística</div>
+      <div class="footer">Torneo Amistoso de Gimnasia Artística</div>
     </div>
   </div>
 </div>

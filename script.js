@@ -4,6 +4,7 @@ let filaActual = null;
 let inscripcionesAbiertas = true;
 let fechaLimite = null;
 let procesando = false;
+let datosGimnastaActual = null;
 
 document.addEventListener("DOMContentLoaded", async function() {
   crearContenedorToast();
@@ -94,16 +95,20 @@ async function cargarConfiguracion() {
       return;
     }
 
-    setTexto("tituloTorneo", config.titulo_torneo);
-    setTexto("club", config.club);
-    setTexto("titulo3", config.titulo3);
-    setTexto("fechaEvento", config.fecha_evento);
-    setTexto("titulo4", config["titulo 4"]);
+    // Cargar información del evento
+    setTexto("infoTorneo", config.titulo_torneo);
+    setTexto("infoClub", config.club);
+    setTexto("infoFechaEvento", config.fecha_evento);
+    setTexto("infoTitulo3", config.titulo3);
+    setTexto("infoTitulo4", config["titulo 4"]);
+    setTexto("infoFechaLimite", formatearFechaParaMostrar(config.fecha_limite_formateada));
 
+    // Título de la pestaña
     if (config.titulo_torneo) {
-      document.title = "Confirmación de asistencia - " + config.titulo_torneo;
+      document.title = "Confirmación de Asistencia - " + config.titulo_torneo;
     }
 
+    // Estado de inscripciones
     inscripcionesAbiertas = config.inscripciones_abiertas;
     fechaLimite = config.fecha_limite_formateada;
 
@@ -174,9 +179,20 @@ async function buscar() {
     return;
   }
 
-  const documento = document.getElementById("documento").value.trim();
-  if (!documento) {
+  const documentoInput = document.getElementById("documento").value.trim();
+  
+  if (!documentoInput) {
     mostrarToast("error", "Campo requerido", "Por favor, ingrese el número de documento.");
+    return;
+  }
+
+  if (!/^\d+$/.test(documentoInput)) {
+    mostrarToast("error", "Documento inválido", "El documento debe contener solo números.");
+    return;
+  }
+
+  if (documentoInput.length < 7) {
+    mostrarToast("error", "Documento inválido", "El documento debe tener al menos 7 dígitos.");
     return;
   }
 
@@ -184,7 +200,7 @@ async function buscar() {
   mostrarProcesando(true);
 
   try {
-    const resultado = await llamarAPI("buscar", { documento });
+    const resultado = await llamarAPI("buscar", { documento: documentoInput });
     
     const formulario = document.getElementById("formulario");
     if (formulario) formulario.classList.remove("hidden");
@@ -223,14 +239,14 @@ async function buscar() {
 
 function cargarDatos(datos) {
   const docEl = document.getElementById("documento");
-  const nombreEl = document.getElementById("nombre");
-  const apellidoEl = document.getElementById("apellido");
+  const nombreCompletoEl = document.getElementById("nombreCompleto");
   const fechaEl = document.getElementById("fechaNacimiento");
   const datosGimnasta = document.getElementById("datosGimnasta");
   
   if (docEl) docEl.value = datos.documento || "";
-  if (nombreEl) nombreEl.value = datos.nombre || "";
-  if (apellidoEl) apellidoEl.value = datos.apellido || "";
+  
+  const nombreCompleto = `${datos.nombre || ""} ${datos.apellido || ""}`.trim();
+  if (nombreCompletoEl) nombreCompletoEl.value = nombreCompleto;
   
   const fechaNormalizada = normalizarFecha(datos.fechaNacimiento);
   if (fechaEl) fechaEl.value = fechaNormalizada;
@@ -251,6 +267,13 @@ function cargarDatos(datos) {
   } else {
     actualizarCategoriaVisual("");
   }
+  
+  datosGimnastaActual = {
+    documento: datos.documento,
+    nombreCompleto: nombreCompleto,
+    categoria: determinarCategoriaPorEdad(fechaNormalizada),
+    fechaNacimiento: fechaNormalizada
+  };
   
   mostrarTarjetaEstadoPago(datos.estadoPago || "PENDIENTE");
 }
@@ -283,7 +306,7 @@ function mostrarTarjetaEstadoPago(estado) {
   } else {
     if (badge) badge.classList.add("pendiente");
     if (estadoTexto) estadoTexto.textContent = "PAGO PENDIENTE";
-    if (estadoIcon) estadoIcon.textContent = "";
+    if (estadoIcon) estadoIcon.textContent = "⏳";
     if (estadoTitulo) estadoTitulo.textContent = "Inscripción registrada";
     if (estadoSubtitulo) estadoSubtitulo.textContent = "Falta completar el pago para confirmar";
     if (accionPago) accionPago.classList.remove("hidden");
@@ -404,12 +427,20 @@ async function guardar() {
     return;
   }
 
-  const nombre = document.getElementById("nombre").value.trim();
-  const apellido = document.getElementById("apellido").value.trim();
+  const nombreCompleto = document.getElementById("nombreCompleto").value.trim();
   const fechaNacimiento = document.getElementById("fechaNacimiento").value;
 
-  if (!nombre || !apellido || !fechaNacimiento) {
+  if (!nombreCompleto || !fechaNacimiento) {
     mostrarToast("error", "Datos incompletos", "Complete todos los datos de la gimnasta.");
+    return;
+  }
+
+  const partes = nombreCompleto.split(" ");
+  const apellido = partes.pop();
+  const nombre = partes.join(" ");
+
+  if (!nombre || !apellido) {
+    mostrarToast("error", "Datos incompletos", "Ingrese nombre y apellido completos.");
     return;
   }
 
@@ -426,6 +457,13 @@ async function guardar() {
     documento, nombre, apellido, fechaNacimiento, puedeAsistir, consentimiento: true
   };
 
+  datosGimnastaActual = {
+    documento,
+    nombreCompleto,
+    categoria,
+    fechaNacimiento
+  };
+
   mostrarProcesando(true);
 
   try {
@@ -438,8 +476,7 @@ async function guardar() {
     }
 
     mostrarVistaConfirmacion({
-      nombre,
-      apellido,
+      nombreCompleto,
       documento,
       fechaNacimiento,
       categoria,
@@ -465,7 +502,7 @@ function mostrarVistaConfirmacion(datos) {
   const confFecha = document.getElementById("confFechaNac");
   const confCat = document.getElementById("confCategoria");
   
-  if (confNombre) confNombre.textContent = `${datos.nombre} ${datos.apellido}`;
+  if (confNombre) confNombre.textContent = datos.nombreCompleto || "-";
   if (confDoc) confDoc.textContent = formatearDocumento(datos.documento);
   if (confFecha) confFecha.textContent = formatearFechaParaMostrar(datos.fechaNacimiento);
   if (confCat) confCat.textContent = datos.categoria || "-";
@@ -488,7 +525,7 @@ function mostrarVistaConfirmacion(datos) {
     if (accionPagado) accionPagado.classList.remove("hidden");
   } else {
     if (badge) badge.textContent = "PAGO PENDIENTE";
-    if (icon) icon.textContent = "";
+    if (icon) icon.textContent = "⏳";
     if (accionPagar) accionPagar.classList.remove("hidden");
   }
   
@@ -523,6 +560,7 @@ function volverAlInicio() {
   }
   
   filaActual = null;
+  datosGimnastaActual = null;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -532,28 +570,95 @@ function mostrarPago(estado) {
   
   if (estado === "PAGADA" || estado === "PAGADO") {
     elemento.classList.add("pagado");
-    elemento.innerHTML = " PAGO ACREDITADO";
+    elemento.innerHTML = "🟢 PAGO ACREDITADO";
   } else {
     elemento.classList.remove("pagado");
-    elemento.innerHTML = "🟡 PAGO PENDIENTE";
+    elemento.innerHTML = " PAGO PENDIENTE";
   }
 }
 
 function pagar() {
-  mostrarToast("info", "Próximamente", "La integración con Mercado Pago se agregará en el siguiente paso.");
+  if (!datosGimnastaActual) {
+    mostrarToast("error", "Error", "No hay datos de la gimnasta para procesar el pago.");
+    return;
+  }
+
+  if (procesando) {
+    mostrarToast("info", "Procesando", "Ya se está procesando su solicitud.");
+    return;
+  }
+
+  const { documento, nombreCompleto, categoria } = datosGimnastaActual;
+
+  mostrarProcesando(true);
+
+  llamarAPI("obtenerDatos", {})
+    .then(config => {
+      const monto = config.monto_inscripcion || 5000;
+      
+      return llamarAPI("crearPreferenciaPago", {
+        datos: {
+          documento,
+          nombreCompleto,
+          categoria: categoria || "Sin categoría",
+          monto: monto,
+          email: ""
+        }
+      });
+    })
+    .then(resultado => {
+      if (resultado.ok && resultado.initPoint) {
+        mostrarToast("success", "Redirigiendo...", "Serás redirigido a Mercado Pago para completar el pago.");
+        
+        setTimeout(() => {
+          window.location.href = resultado.initPoint;
+        }, 1500);
+      } else {
+        throw new Error(resultado.error || "No se pudo crear el pago");
+      }
+    })
+    .catch(error => {
+      mostrarToast("error", "Error al pagar", error.message);
+    })
+    .finally(() => {
+      mostrarProcesando(false);
+    });
+}
+
+function manejarRetornoMP() {
+  const params = new URLSearchParams(window.location.search);
+  const pago = params.get("pago");
+  const ref = params.get("ref");
+
+  if (pago && ref) {
+    if (pago === "success") {
+      mostrarToast("success", "¡Pago exitoso!", "Tu pago fue acreditado correctamente.");
+    } else if (pago === "pending") {
+      mostrarToast("warning", "Pago pendiente", "Tu pago está en proceso de acreditación.");
+    } else if (pago === "failure") {
+      mostrarToast("error", "Pago rechazado", "El pago no pudo ser procesado. Intenta nuevamente.");
+    }
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    if (ref) {
+      setTimeout(() => {
+        document.getElementById("documento").value = ref;
+        buscar();
+      }, 2000);
+    }
+  }
 }
 
 function limpiarFormulario() {
-  const nombre = document.getElementById("nombre");
-  const apellido = document.getElementById("apellido");
+  const nombreCompleto = document.getElementById("nombreCompleto");
   const fecha = document.getElementById("fechaNacimiento");
   const consentimiento = document.getElementById("consentimiento");
   const datosGimnasta = document.getElementById("datosGimnasta");
   const pago = document.getElementById("pago");
   const tarjeta = document.getElementById("tarjetaEstadoPago");
   
-  if (nombre) nombre.value = "";
-  if (apellido) apellido.value = "";
+  if (nombreCompleto) nombreCompleto.value = "";
   if (fecha) fecha.value = "";
   if (consentimiento) consentimiento.checked = false;
   
