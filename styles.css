@@ -47,12 +47,16 @@ body {
   margin-bottom: 30px;
 }
 
-.logo { 
-  width: 220px; 
-  max-width: 70%; 
+/* ============================================
+   BANNER
+============================================ */
+.banner { 
+  width: 100%; 
+  max-width: 100%; 
   height: auto; 
   display: block;
-  margin: 0 auto;
+  object-fit: contain;
+  border-radius: 12px;
 }
 
 /* ============================================
@@ -1020,7 +1024,7 @@ button:disabled {
     border-radius: 20px; 
     margin-bottom: 25px;
   }
-  .logo { width: 180px; }
+  .banner { border-radius: 8px; }
   .section-title { font-size: 22px; }
   input, select { padding: 14px 16px; font-size: 15px; }
   button { padding: 15px 20px; font-size: 15px; }
@@ -1046,7 +1050,7 @@ button:disabled {
     border-radius: 16px; 
     margin-bottom: 20px;
   }
-  .logo { width: 150px; margin-bottom: 10px; }
+  .banner { border-radius: 6px; }
   .section-title { font-size: 20px; margin-bottom: 8px; }
   .section-description { font-size: 14px; margin-bottom: 25px; }
   .field { margin-bottom: 24px; }
@@ -1088,7 +1092,7 @@ button:disabled {
 @media (max-width: 360px) {
   .page { padding: 15px 10px 35px; }
   .header, .form-card, .vista-confirmacion, .info-evento { padding: 20px 16px; }
-  .logo { width: 130px; }
+  .banner { border-radius: 4px; }
   .section-title { font-size: 18px; }
   input, select { padding: 12px 14px; }
   button { padding: 13px 16px; font-size: 14px; }
