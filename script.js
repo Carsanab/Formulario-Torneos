@@ -94,7 +94,6 @@ async function cargarConfiguracion() {
       return;
     }
 
-    setTexto("tituloPrincipal", config.titulo_principal);
     setTexto("tituloTorneo", config.titulo_torneo);
     setTexto("club", config.club);
     setTexto("titulo3", config.titulo3);

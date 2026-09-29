@@ -63,14 +63,6 @@ body {
 }
 
 /* JERARQUÍA DE TÍTULOS */
-.titulo-principal { 
-  color: var(--marron); 
-  font-size: 32px; 
-  font-weight: 800; 
-  margin-bottom: 12px;
-  text-align: center;
-  line-height: 1.2;
-}
 
 .titulo-torneo { 
   color: var(--rojo); 
@@ -304,7 +296,7 @@ button:disabled {
 .btn-buscar { 
   background: var(--marron); 
   color: var(--blanco);
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .btn-buscar:hover { 
