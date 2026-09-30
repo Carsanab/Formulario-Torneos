@@ -443,11 +443,17 @@ async function guardar() {
   }
 
   const documento = document.getElementById("documento").value;
-  const categoria = determinarCategoriaPorEdad(fechaNacimiento);
+const categoria = determinarCategoriaPorEdad(fechaNacimiento);
 
-  const datos = {
-    documento, nombre, apellido, fechaNacimiento, puedeAsistir, consentimiento: true
-  };
+const datos = {
+  documento, 
+  nombre, 
+  apellido, 
+  fechaNacimiento, 
+  categoria, // ← AGREGADO: enviamos la categoría ya calculada
+  puedeAsistir, 
+  consentimiento: true
+};
 
   // Guardamos para el pago
   datosGimnastaActual = {
