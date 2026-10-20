@@ -1115,3 +1115,119 @@ button:focus-visible {
   outline: 3px solid var(--rojo);
   outline-offset: 2px;
 }
+
+/* Nuevos estilos */
+/* ============================================
+   CAMPOS DE SOLO LECTURA (datos de Base de Gimnastas)
+============================================ */
+.input-readonly {
+  background: #f5f5f5 !important;
+  color: #555 !important;
+  cursor: not-allowed;
+  border-color: #ddd !important;
+}
+
+.input-readonly:focus {
+  border-color: #ddd !important;
+  box-shadow: none !important;
+}
+
+.input-monto {
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  color: var(--rojo) !important;
+  text-align: center;
+}
+
+.campo-readonly {
+  font-size: 12px;
+  color: var(--gris-texto);
+  font-weight: 400;
+}
+
+/* ============================================
+   INFO DE INSCRIPCIÓN EXISTENTE
+============================================ */
+.info-inscripcion {
+  background: #f9f9f9;
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  border: 1px solid var(--gris-claro);
+}
+
+.info-inscripcion-fila {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 13px;
+  border-bottom: 1px dashed #e0e0e0;
+}
+
+.info-inscripcion-fila:last-child {
+  border-bottom: none;
+}
+
+.info-inscripcion-label {
+  color: var(--gris-texto);
+  font-weight: 600;
+}
+
+.info-inscripcion-valor {
+  color: var(--marron);
+  font-weight: 700;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+/* ============================================
+   MONTO A PAGAR
+============================================ */
+.monto-a-pagar {
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+  border: 2px solid var(--rojo);
+  border-radius: 12px;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.monto-label {
+  color: var(--marron);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.monto-valor {
+  color: var(--rojo);
+  font-weight: 800;
+  font-size: 22px;
+}
+
+/* ============================================
+   VISTA DE CONFIRMACIÓN - MONTO
+============================================ */
+.dato-monto {
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+  margin: 10px -25px -10px;
+  padding: 18px 25px;
+  border-radius: 12px;
+  border: 2px solid var(--rojo);
+}
+
+.dato-valor-monto {
+  color: var(--rojo);
+  font-size: 22px;
+  font-weight: 800;
+  text-align: right;
+}
+
+@media (max-width: 480px) {
+  .dato-monto { margin: 10px -20px -10px; padding: 18px 20px; }
+  .dato-valor-monto { text-align: left; font-size: 20px; }
+  .monto-a-pagar { flex-direction: column; gap: 8px; text-align: center; }
+  .monto-valor { font-size: 20px; }
+}

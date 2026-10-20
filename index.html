@@ -23,7 +23,7 @@
 
     <div id="contenidoPrincipal">
       
-      <!-- HEADER: SOLO LOGO -->
+      <!-- HEADER CON BANNER -->
       <div class="header">
         <img src="images/Banner.jpeg" class="banner" alt="Banner Gimnasia Artística Los Andes">
       </div>
@@ -31,9 +31,8 @@
       <!-- SECCIÓN DE INFORMACIÓN DEL EVENTO -->
       <div class="info-evento">
         
-        <!-- NOMBRE DEL TORNEO (DESTACADO) -->
         <div class="info-item info-item-torneo">
-          <div class="info-icono">🏆</div>
+          <div class="info-icono"></div>
           <div class="info-contenido">
             <div class="info-label">Torneo</div>
             <div class="info-valor info-valor-torneo" id="infoTorneo">-</div>
@@ -57,7 +56,7 @@
         </div>
 
         <div class="info-item info-item-info">
-          <div class="info-icono">️ℹ️</div>
+          <div class="info-icono">ℹ️</div>
           <div class="info-contenido">
             <div class="info-label">Información</div>
             <p class="info-parrafo" id="infoTitulo3"></p>
@@ -75,8 +74,8 @@
 
       </div>
 
-      <!-- SECCIÓN DE CONFIRMACIÓN -->
-      <div class="form-card">
+      <!-- FORMULARIO DE INSCRIPCIÓN -->
+      <div id="formCard" class="form-card">
         <div class="section-title">Confirmación de Asistencia</div>
         <div class="section-description">Para comenzar, ingrese el número de documento de la gimnasta.</div>
 
@@ -129,8 +128,28 @@
               <div class="estado-badge" id="estadoBadge">
                 <span id="estadoTexto">PENDIENTE</span>
               </div>
+
+              <!-- Info adicional de inscripción existente -->
+              <div id="infoInscripcionExistente" class="info-inscripcion hidden">
+                <div class="info-inscripcion-fila">
+                  <span class="info-inscripcion-label">ID de pago:</span>
+                  <span id="infoPagoId" class="info-inscripcion-valor">-</span>
+                </div>
+                <div class="info-inscripcion-fila">
+                  <span class="info-inscripcion-label">Fecha de registro:</span>
+                  <span id="infoFechaRegistro" class="info-inscripcion-valor">-</span>
+                </div>
+                <div class="info-inscripcion-fila">
+                  <span class="info-inscripcion-label">Última actualización:</span>
+                  <span id="infoFechaActualizacion" class="info-inscripcion-valor">-</span>
+                </div>
+              </div>
               
               <div id="accionPago" class="accion-pago hidden">
+                <div class="monto-a-pagar">
+                  <span class="monto-label">Monto a pagar:</span>
+                  <span class="monto-valor" id="montoAPagar">$0</span>
+                </div>
                 <button type="button" class="btn-pagar-ahora" onclick="pagar()">
                   💳 PAGAR INSCRIPCIÓN AHORA
                 </button>
@@ -144,52 +163,48 @@
             </div>
 
             <div class="section-title">Datos de la gimnasta</div>
-            <div class="section-description">Verifique los datos y complete o corrija la información necesaria.</div>
+            <div class="section-description">Verifique los datos. Los campos marcados con 🔒 vienen de la base y no pueden modificarse.</div>
 
+            <!-- Nombres (viene de Base de Gimnastas, de solo lectura) -->
             <div class="field">
-              <label for="nombre">Nombre</label>
-              <input type="text" id="nombre" placeholder="Nombre de la gimnasta">
+              <label for="nombres">Nombres <span class="campo-readonly">🔒</span></label>
+              <input type="text" id="nombres" readonly class="input-readonly">
             </div>
 
+            <!-- Fecha de nacimiento (viene de Base de Gimnastas, de solo lectura) -->
             <div class="field">
-              <label for="apellido">Apellido</label>
-              <input type="text" id="apellido" placeholder="Apellido de la gimnasta">
+              <label for="fechaNacimiento">Fecha de nacimiento <span class="campo-readonly">🔒</span></label>
+              <input type="text" id="fechaNacimiento" readonly class="input-readonly">
             </div>
 
+            <!-- Categoría (viene de Base de Gimnastas, de solo lectura) -->
             <div class="field">
-              <label for="fechaNacimiento">Fecha de nacimiento</label>
-              <input type="date" id="fechaNacimiento" onchange="calcularCategoria()">
-              <div id="categoria" class="categoria-box">Categoría: <strong>-</strong></div>
+              <label for="categoria">Categoría <span class="campo-readonly">🔒</span></label>
+              <input type="text" id="categoria" readonly class="input-readonly">
+            </div>
+
+            <!-- Nivel (viene de Base de Gimnastas, de solo lectura) -->
+            <div class="field">
+              <label for="nivel">Nivel <span class="campo-readonly"></span></label>
+              <input type="text" id="nivel" readonly class="input-readonly">
+            </div>
+
+            <!-- Monto calculado (de solo lectura) -->
+            <div class="field">
+              <label for="monto">Monto de inscripción <span class="campo-readonly">🔒</span></label>
+              <input type="text" id="monto" readonly class="input-readonly input-monto">
             </div>
 
             <div class="indicaciones">
               <div class="section-title">Información importante</div>
               <div class="section-description">Antes de confirmar la participación, lea atentamente las siguientes indicaciones.</div>
               
-              <div class="indicacion">
-                <div class="indicacion-titulo">👕 Vestimenta</div>
-                <div class="indicacion-texto">La gimnasta deberá presentarse con la vestimenta indicada por la organización.</div>
-              </div>
-              <div class="indicacion">
-                <div class="indicacion-titulo">💇 Peinado</div>
-                <div class="indicacion-texto">Deberá presentarse con el peinado indicado para la competencia.</div>
-              </div>
-              <div class="indicacion">
-                <div class="indicacion-titulo">💧 Botella de agua</div>
-                <div class="indicacion-texto">Cada gimnasta deberá llevar su propia botella de agua.</div>
-              </div>
-              <div class="indicacion">
-                <div class="indicacion-titulo">🧣 Manta</div>
-                <div class="indicacion-texto">Se recomienda llevar una manta en caso de frío.</div>
-              </div>
-              <div class="indicacion">
-                <div class="indicacion-titulo">🍎 Alimentación</div>
-                <div class="indicacion-texto">La gimnasta deberá comer aproximadamente una hora antes de la competencia.</div>
-              </div>
-              <div class="indicacion">
-                <div class="indicacion-titulo">📅 Fecha límite</div>
-                <div class="indicacion-texto">La inscripción y el pago deberán realizarse antes de la fecha límite establecida.</div>
-              </div>
+              <div class="indicacion"><div class="indicacion-titulo">👕 Vestimenta</div><div class="indicacion-texto">La gimnasta deberá presentarse con la vestimenta indicada por la organización.</div></div>
+              <div class="indicacion"><div class="indicacion-titulo">💇 Peinado</div><div class="indicacion-texto">Deberá presentarse con el peinado indicado para la competencia.</div></div>
+              <div class="indicacion"><div class="indicacion-titulo">💧 Botella de agua</div><div class="indicacion-texto">Cada gimnasta deberá llevar su propia botella de agua.</div></div>
+              <div class="indicacion"><div class="indicacion-titulo">🧣 Manta</div><div class="indicacion-texto">Se recomienda llevar una manta en caso de frío.</div></div>
+              <div class="indicacion"><div class="indicacion-titulo">🍎 Alimentación</div><div class="indicacion-texto">La gimnasta deberá comer aproximadamente una hora antes de la competencia.</div></div>
+              <div class="indicacion"><div class="indicacion-titulo">📅 Fecha límite</div><div class="indicacion-texto">La inscripción y el pago deberán realizarse antes de la fecha límite establecida.</div></div>
             </div>
 
             <div class="consentimiento">
@@ -206,59 +221,32 @@
 
       <!-- VISTA DE CONFIRMACIÓN -->
       <div id="vistaConfirmacion" class="vista-confirmacion hidden">
-        
         <div class="confirmacion-header">
           <div class="confirmacion-icono">✅</div>
           <div class="confirmacion-titulo">¡Inscripción confirmada!</div>
           <div class="confirmacion-subtitulo">Los datos fueron registrados correctamente</div>
         </div>
-
         <div class="confirmacion-datos">
-          <div class="dato-fila">
-            <div class="dato-label">Nombre y apellido</div>
-            <div class="dato-valor" id="confNombreCompleto">-</div>
-          </div>
-          
-          <div class="dato-fila">
-            <div class="dato-label">Documento</div>
-            <div class="dato-valor" id="confDocumento">-</div>
-          </div>
-          
-          <div class="dato-fila">
-            <div class="dato-label">Fecha de nacimiento</div>
-            <div class="dato-valor" id="confFechaNac">-</div>
-          </div>
-          
-          <div class="dato-fila dato-categoria">
-            <div class="dato-label">Categoría asignada</div>
-            <div class="dato-valor-categoria" id="confCategoria">-</div>
-          </div>
+          <div class="dato-fila"><div class="dato-label">Nombres</div><div class="dato-valor" id="confNombres">-</div></div>
+          <div class="dato-fila"><div class="dato-label">Documento</div><div class="dato-valor" id="confDocumento">-</div></div>
+          <div class="dato-fila"><div class="dato-label">Categoría</div><div class="dato-valor" id="confCategoria">-</div></div>
+          <div class="dato-fila"><div class="dato-label">Nivel</div><div class="dato-valor" id="confNivel">-</div></div>
+          <div class="dato-fila dato-monto"><div class="dato-label">Monto</div><div class="dato-valor-monto" id="confMonto">-</div></div>
         </div>
-
         <div id="confEstadoPago" class="conf-estado-pago">
           <div class="conf-estado-header">
             <div class="conf-estado-icon" id="confEstadoIcon"></div>
-            <div>
-              <div class="conf-estado-titulo">Estado del pago</div>
-              <div class="conf-estado-badge" id="confEstadoBadge">PENDIENTE</div>
-            </div>
+            <div><div class="conf-estado-titulo">Estado del pago</div><div class="conf-estado-badge" id="confEstadoBadge">PENDIENTE</div></div>
           </div>
-          
           <div id="confAccionPagar" class="conf-accion hidden">
             <p class="conf-aviso">Para completar la inscripción, realice el pago de la misma.</p>
-            <button type="button" class="btn-pagar-confirmacion" onclick="pagar()">
-              💳 PAGAR INSCRIPCIÓN
-            </button>
+            <button type="button" class="btn-pagar-confirmacion" onclick="pagar()">💳 PAGAR INSCRIPCIÓN</button>
           </div>
-          
           <div id="confAccionPagado" class="conf-accion-pagado hidden">
             <p class="conf-pagado-texto">✅ Su pago fue acreditado correctamente. ¡La inscripción está completa!</p>
           </div>
         </div>
-
-        <button type="button" class="btn-volver" onclick="volverAlInicio()">
-          🔍 REALIZAR OTRA CONSULTA
-        </button>
+        <button type="button" class="btn-volver" onclick="volverAlInicio()"> REALIZAR OTRA CONSULTA</button>
       </div>
 
       <div class="footer">Torneo Amistoso de Gimnasia Artística</div>
