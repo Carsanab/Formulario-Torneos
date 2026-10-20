@@ -1231,3 +1231,12 @@ button:focus-visible {
   .monto-a-pagar { flex-direction: column; gap: 8px; text-align: center; }
   .monto-valor { font-size: 20px; }
 }
+
+/* Estilo especial para monto no definido */
+.input-monto-error {
+  color: var(--rojo) !important;
+  font-weight: 700 !important;
+  font-style: italic;
+  background: #fff5f5 !important;
+  border-color: var(--rojo) !important;
+}

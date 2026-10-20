@@ -1,4 +1,4 @@
-// ⚠️ REEMPLAZÁ ESTAS 6 URLS CON TUS DATOS REALES
+// ⚠️ URLS DE LAS TABLAS PUBLICADAS COMO CSV Y API
 const CSV_GIMNASTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSja6kRRbx1ScCQ47mEPEZQeiBp2rM2uJfW5KJ_GxHjHen1SZ68FDUNrZLvRgaI4hKG3-VdSe9CDQF7/pub?gid=0&single=true&output=csv";
 const CSV_CATEGORIAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSja6kRRbx1ScCQ47mEPEZQeiBp2rM2uJfW5KJ_GxHjHen1SZ68FDUNrZLvRgaI4hKG3-VdSe9CDQF7/pub?gid=879522760&single=true&output=csv";
 const CSV_DATOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSja6kRRbx1ScCQ47mEPEZQeiBp2rM2uJfW5KJ_GxHjHen1SZ68FDUNrZLvRgaI4hKG3-VdSe9CDQF7/pub?gid=1470762749&single=true&output=csv";
@@ -8,11 +8,11 @@ const API_URL = "https://script.google.com/macros/s/AKfycbz0GR3bcvVC-pUzmOjw2NUN
 
 // Cache local de todas las tablas
 let cache = {
-  gimnastas: [],         // Inscripciones actuales
-  categorias: [],        // Edad → Categoría
-  datos: {},             // Configuración del torneo
-  baseGimnastas: [],     // Base maestra
-  montos: []             // Nivel + Categoría → Monto
+  gimnastas: [],
+  categorias: [],
+  datos: {},
+  baseGimnastas: [],
+  montos: []
 };
 
 let filaActual = null;
@@ -27,7 +27,6 @@ document.addEventListener("DOMContentLoaded", async function() {
   crearContenedorToast();
   crearOverlayProcesando();
   
-  // Precargar TODAS las tablas en paralelo
   await Promise.all([
     cargarCSV("gimnastas", CSV_GIMNASTAS),
     cargarCSV("categorias", CSV_CATEGORIAS),
@@ -36,14 +35,12 @@ document.addEventListener("DOMContentLoaded", async function() {
     cargarCSV("montos", CSV_MONTOS)
   ]);
 
-  // Procesar configuración
   procesarConfiguracion();
-  
   manejarRetornoMP();
 });
 
 // ==========================================
-// CARGA DE CSV (ULTRA RÁPIDO)
+// CARGA DE CSV
 // ==========================================
 async function cargarCSV(key, url, esConfig = false) {
   try {
@@ -66,7 +63,6 @@ function parseCSV(text) {
   const lines = text.split('\n').filter(line => line.trim() !== '');
   if (lines.length < 2) return [];
   
-  // Normalizar headers: lowercase, sin espacios, sin guiones
   const headers = lines[0].split(',').map(h => 
     h.trim().replace(/^"|"$/g, '').toLowerCase().replace(/[\s_]+/g, '')
   );
@@ -137,7 +133,6 @@ function procesarConfiguracion() {
   const tituloTorneo = config.titulotorneo || config.titulo_torneo;
   if (tituloTorneo) document.title = "Confirmación de Asistencia - " + tituloTorneo;
   
-  // Verificar fecha límite
   if (fechaLimiteRaw) {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
@@ -180,7 +175,6 @@ async function buscar() {
     if (formulario) formulario.classList.remove("hidden");
 
     if (!baseGimnasta) {
-      // NO EXISTE EN BASE MAESTRA → BLOQUEAR
       filaActual = null;
       mostrarMensaje("❌ Documento inexistente. Comuníquese con el coordinador.", "error");
       mostrarToast("error", "Documento no encontrado", "Este documento no está en la base. Comuníquese con el coordinador.", 6000);
@@ -200,10 +194,13 @@ async function buscar() {
     const categoria = (baseGimnasta.categoria || '').trim();
     const monto = calcularMonto(nivel, categoria);
 
-    if (!monto) {
-      mostrarMensaje(`❌ No hay monto definido para Nivel ${nivel} - Categoría ${categoria}. Comuníquese con el coordinador.`, "error");
-      mostrarToast("error", "Monto no definido", `No hay precio para ${nivel} / ${categoria}.`, 6000);
-      return;
+    // 🌟 Manejo de nivel vacío o monto no definido
+    if (!nivel) {
+      mostrarMensaje("⚠️ Esta gimnasta no tiene nivel asignado. Comuníquese con el coordinador.", "warning");
+      mostrarToast("warning", "Nivel no definido", "Esta gimnasta no tiene nivel asignado. Comuníquese con el coordinador.", 6000);
+    } else if (!monto) {
+      mostrarMensaje(`⚠️ No hay monto definido para Nivel ${nivel} - Categoría ${categoria}. Comuníquese con el coordinador.`, "warning");
+      mostrarToast("warning", "Monto no definido", `No hay precio para ${nivel} / ${categoria}. Comuníquese con el coordinador.`, 6000);
     }
 
     // PASO 4: Cargar datos en el formulario
@@ -224,11 +221,6 @@ async function buscar() {
 
     cargarDatos(datosMapeados);
 
-    setTimeout(() => {
-      const tarjeta = document.getElementById("tarjetaEstadoPago");
-      if (tarjeta) tarjeta.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 200);
-
   } catch (error) {
     console.error("Error en buscar:", error);
     mostrarMensaje("Error: " + error.message, "error");
@@ -239,6 +231,9 @@ async function buscar() {
 }
 
 function calcularMonto(nivel, categoria) {
+  // Si no hay nivel, retornar null inmediatamente
+  if (!nivel || nivel.trim() === '') return null;
+  
   const nivelNorm = nivel.trim().toLowerCase();
   const catNorm = categoria.trim().toLowerCase();
   
@@ -249,7 +244,6 @@ function calcularMonto(nivel, categoria) {
   
   if (!registro) return null;
   
-  // Parsear monto (puede venir como "$25,000.00" o "25000")
   const montoStr = String(registro.monto || '0').replace(/[$,\s]/g, '').replace('.', ',');
   const monto = parseFloat(montoStr.replace(',', '.'));
   return isNaN(monto) ? null : monto;
@@ -263,31 +257,60 @@ function cargarDatos(datos) {
   document.getElementById("nombres").value = datos.nombres || "";
   document.getElementById("fechaNacimiento").value = formatearFechaParaMostrar(datos.fechaNacimiento) || datos.fechaNacimiento;
   document.getElementById("categoria").value = datos.categoria || "";
-  document.getElementById("nivel").value = datos.nivel || "";
-  document.getElementById("monto").value = formatearMonto(datos.monto);
+  document.getElementById("nivel").value = datos.nivel || "-";
+  
+  // 🌟 Manejo especial para monto no definido
+  const montoInput = document.getElementById("monto");
+  if (datos.monto === null || datos.monto === undefined) {
+    montoInput.value = "No definido - hablar con el coordinador";
+    montoInput.classList.add("input-monto-error");
+  } else {
+    montoInput.value = formatearMonto(datos.monto);
+    montoInput.classList.remove("input-monto-error");
+  }
 
   const radioSi = document.querySelector('input[name="puedeAsistir"][value="SI"]');
   const radioNo = document.querySelector('input[name="puedeAsistir"][value="NO"]');
-  if (datos.puedeAsistir === "SI" && radioSi) radioSi.checked = true;
-  else if (datos.puedeAsistir === "NO" && radioNo) radioNo.checked = true;
-  else if (radioSi && radioNo) { radioSi.checked = false; radioNo.checked = false; }
-
   const consentimiento = document.getElementById("consentimiento");
-  if (consentimiento) consentimiento.checked = datos.consentimiento === "SI";
+  const datosGimnastaDiv = document.getElementById("datosGimnasta");
+  const seccionAsistencia = document.getElementById("seccionAsistencia");
+  const seccionPago = document.getElementById("seccionPago");
 
-  document.getElementById("datosGimnasta").classList.remove("hidden");
-
-  // Guardar datos para pago
+  // Guardar datos en memoria
   datosGimnastaActual = {
     documento: datos.documento,
     nombres: datos.nombres,
     categoria: datos.categoria,
     nivel: datos.nivel,
     monto: datos.monto,
-    estadoPago: datos.estadoPago
+    estadoPago: datos.estadoPago,
+    pagoId: datos.pagoId,
+    fechaRegistro: datos.fechaRegistro,
+    fechaActualizacion: datos.fechaActualizacion
   };
 
-  mostrarTarjetaEstadoPago(datos);
+  // 🌟 LÓGICA INTELIGENTE: Si ya pagó o ya había confirmado asistencia
+  const yaPago = (datos.estadoPago === "PAGADO" || datos.estadoPago === "PAGADA");
+  const yaAsistia = (datos.puedeAsistir === "SI");
+
+  // Siempre mostrar los datos de la gimnasta
+  datosGimnastaDiv.classList.remove("hidden");
+
+  if (yaPago || yaAsistia) {
+    // Mostrar todo automáticamente
+    seccionAsistencia.classList.remove("hidden");
+    seccionPago.classList.remove("hidden");
+    if (radioSi) radioSi.checked = true;
+    if (consentimiento && yaPago) consentimiento.checked = true;
+    mostrarTarjetaEstadoPago(datos);
+  } else {
+    // Mostrar solo la pregunta de asistencia, ocultar el resto
+    seccionAsistencia.classList.remove("hidden");
+    seccionPago.classList.add("hidden");
+    if (radioSi) radioSi.checked = false;
+    if (radioNo) radioNo.checked = false;
+    if (consentimiento) consentimiento.checked = false;
+  }
 }
 
 function formatearMonto(monto) {
@@ -313,13 +336,11 @@ function mostrarTarjetaEstadoPago(datos) {
   accionPagado.classList.add("hidden");
   infoExistente.classList.add("hidden");
 
-  // Mostrar monto a pagar
   if (montoAPagar) montoAPagar.textContent = formatearMonto(datos.monto);
 
   const estado = datos.estadoPago;
 
   if (estado === "PAGADO" || estado === "PAGADA") {
-    // PAGADO
     badge.classList.add("pagado");
     estadoTexto.textContent = "PAGO ACREDITADO";
     estadoIcon.textContent = "✅";
@@ -327,7 +348,6 @@ function mostrarTarjetaEstadoPago(datos) {
     estadoSubtitulo.textContent = "Su pago fue acreditado correctamente";
     accionPagado.classList.remove("hidden");
 
-    // Mostrar info de inscripción existente
     if (datos.pagoId || datos.fechaRegistro) {
       infoExistente.classList.remove("hidden");
       document.getElementById("infoPagoId").textContent = datos.pagoId || "-";
@@ -335,7 +355,6 @@ function mostrarTarjetaEstadoPago(datos) {
       document.getElementById("infoFechaActualizacion").textContent = formatearFechaParaMostrar(datos.fechaActualizacion) || "-";
     }
   } else {
-    // PENDIENTE o NUEVO
     badge.classList.add("pendiente");
     estadoTexto.textContent = "PAGO PENDIENTE";
     estadoIcon.textContent = "⏳";
@@ -343,7 +362,6 @@ function mostrarTarjetaEstadoPago(datos) {
     estadoSubtitulo.textContent = datos.estadoPago === "NUEVO" ? "Complete los datos para inscribirse" : "Falta completar el pago";
     accionPago.classList.remove("hidden");
 
-    // Mostrar info de inscripción existente
     if (datos.pagoId || datos.fechaRegistro) {
       infoExistente.classList.remove("hidden");
       document.getElementById("infoPagoId").textContent = datos.pagoId || "-";
@@ -384,6 +402,12 @@ async function guardar() {
     return;
   }
 
+  // Validar que tenga monto definido
+  if (datosGimnastaActual.monto === null || datosGimnastaActual.monto === undefined) {
+    mostrarToast("error", "Monto no definido", "Esta gimnasta no tiene monto asignado. Comuníquese con el coordinador.");
+    return;
+  }
+
   const datos = {
     documento: datosGimnastaActual.documento,
     nombres: datosGimnastaActual.nombres,
@@ -405,7 +429,6 @@ async function guardar() {
       mostrarToast("success", "¡Inscripción registrada!", "Correctamente.");
     }
 
-    // Actualizar estado local
     datosGimnastaActual.estadoPago = resultado.estadoPago || "PENDIENTE";
 
     mostrarVistaConfirmacion({
@@ -424,7 +447,6 @@ async function guardar() {
 }
 
 function normalizarFechaParaGuardar(fechaStr) {
-  // Convertir "DD/MM/YYYY" a "YYYY-MM-DD"
   if (!fechaStr) return "";
   const partes = fechaStr.split("/");
   if (partes.length === 3) {
@@ -474,6 +496,11 @@ function mostrarVistaConfirmacion(datos) {
 function pagar() {
   if (!datosGimnastaActual) { mostrarToast("error", "Error", "No hay datos para pagar."); return; }
   if (procesando) { mostrarToast("info", "Procesando", "Espere un momento."); return; }
+
+  if (datosGimnastaActual.monto === null || datosGimnastaActual.monto === undefined) {
+    mostrarToast("error", "Monto no definido", "Esta gimnasta no tiene monto asignado. Comuníquese con el coordinador.");
+    return;
+  }
 
   const { documento, nombres, categoria, nivel, monto } = datosGimnastaActual;
   mostrarProcesando(true);
@@ -540,10 +567,8 @@ function setTexto(id, texto) {
 
 function formatearFechaParaMostrar(fechaStr) {
   if (!fechaStr) return "";
-  // Manejar formato "DD/MM/YYYY HH:mm"
   const partes = fechaStr.split(" ")[0].split("/");
   if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
-  // Manejar formato "YYYY-MM-DD"
   const partes2 = fechaStr.split("-");
   if (partes2.length === 3) return `${partes2[2]}/${partes2[1]}/${partes2[0]}`;
   return fechaStr;
@@ -556,13 +581,30 @@ function formatearDocumento(doc) {
   return limpio.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
+// ==========================================
+// MOSTRAR/OCULTAR SECCIÓN DE PAGO SEGÚN ASISTENCIA
+// ==========================================
 function cambiarAsistencia() {
   const radioSi = document.querySelector('input[name="puedeAsistir"][value="SI"]');
   const valor = radioSi && radioSi.checked ? "SI" : "NO";
-  const datos = document.getElementById("datosGimnasta");
-  if (datos) {
-    if (valor === "SI") datos.classList.remove("hidden");
-    else datos.classList.add("hidden");
+  const seccionPago = document.getElementById("seccionPago");
+  const consentimiento = document.getElementById("consentimiento");
+
+  if (valor === "SI") {
+    seccionPago.classList.remove("hidden");
+    
+    if (datosGimnastaActual) {
+      mostrarTarjetaEstadoPago(datosGimnastaActual);
+    }
+    
+    setTimeout(() => {
+      seccionPago.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+    
+  } else {
+    seccionPago.classList.add("hidden");
+    if (consentimiento) consentimiento.checked = false;
+    mostrarToast("info", "Registro actualizado", "Se ha registrado que no podrá asistir. ¡Gracias por avisar!");
   }
 }
 
@@ -656,16 +698,23 @@ function limpiarFormulario() {
   const monto = document.getElementById("monto");
   const consentimiento = document.getElementById("consentimiento");
   const datosGimnasta = document.getElementById("datosGimnasta");
+  const seccionAsistencia = document.getElementById("seccionAsistencia");
+  const seccionPago = document.getElementById("seccionPago");
   const tarjeta = document.getElementById("tarjetaEstadoPago");
   
   if (nombres) nombres.value = "";
   if (fecha) fecha.value = "";
   if (categoria) categoria.value = "";
   if (nivel) nivel.value = "";
-  if (monto) monto.value = "";
+  if (monto) { 
+    monto.value = ""; 
+    monto.classList.remove("input-monto-error");
+  }
   if (consentimiento) consentimiento.checked = false;
   document.querySelectorAll('input[name="puedeAsistir"]').forEach(r => r.checked = false);
   if (datosGimnasta) datosGimnasta.classList.add("hidden");
+  if (seccionAsistencia) seccionAsistencia.classList.add("hidden");
+  if (seccionPago) seccionPago.classList.add("hidden");
   if (tarjeta) tarjeta.classList.add("hidden");
 }
 
