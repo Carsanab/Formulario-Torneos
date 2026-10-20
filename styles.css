@@ -1240,3 +1240,41 @@ button:focus-visible {
   background: #fff5f5 !important;
   border-color: var(--rojo) !important;
 }
+
+/* ============================================
+   FIX: BOTONES DE ASISTENCIA EN MÓVIL
+============================================ */
+@media (max-width: 480px) {
+  .radio-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .radio-option {
+    min-width: 100% !important;
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  .radio-label-text {
+    width: 100%;
+    padding: 16px 18px;
+    font-size: 15px;
+  }
+
+  .radio-icon {
+    font-size: 18px;
+  }
+}
+
+/* Asegurar que la sección de asistencia sea visible en móvil */
+@media (max-width: 768px) {
+  #seccionAsistencia {
+    width: 100%;
+    overflow: visible;
+  }
+
+  #seccionPago {
+    width: 100%;
+  }
+}

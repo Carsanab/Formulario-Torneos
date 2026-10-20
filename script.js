@@ -259,7 +259,6 @@ function cargarDatos(datos) {
   document.getElementById("categoria").value = datos.categoria || "";
   document.getElementById("nivel").value = datos.nivel || "-";
   
-  // 🌟 Manejo especial para monto no definido
   const montoInput = document.getElementById("monto");
   if (datos.monto === null || datos.monto === undefined) {
     montoInput.value = "No definido - hablar con el coordinador";
@@ -276,7 +275,6 @@ function cargarDatos(datos) {
   const seccionAsistencia = document.getElementById("seccionAsistencia");
   const seccionPago = document.getElementById("seccionPago");
 
-  // Guardar datos en memoria
   datosGimnastaActual = {
     documento: datos.documento,
     nombres: datos.nombres,
@@ -289,28 +287,31 @@ function cargarDatos(datos) {
     fechaActualizacion: datos.fechaActualizacion
   };
 
-  // 🌟 LÓGICA INTELIGENTE: Si ya pagó o ya había confirmado asistencia
   const yaPago = (datos.estadoPago === "PAGADO" || datos.estadoPago === "PAGADA");
   const yaAsistia = (datos.puedeAsistir === "SI");
 
-  // Siempre mostrar los datos de la gimnasta
-  datosGimnastaDiv.classList.remove("hidden");
+  // 🌟 Forzar visibilidad de datos y sección de asistencia
+  if (datosGimnastaDiv) datosGimnastaDiv.classList.remove("hidden");
+  if (seccionAsistencia) seccionAsistencia.classList.remove("hidden");
 
   if (yaPago || yaAsistia) {
-    // Mostrar todo automáticamente
-    seccionAsistencia.classList.remove("hidden");
-    seccionPago.classList.remove("hidden");
+    if (seccionPago) seccionPago.classList.remove("hidden");
     if (radioSi) radioSi.checked = true;
     if (consentimiento && yaPago) consentimiento.checked = true;
     mostrarTarjetaEstadoPago(datos);
   } else {
-    // Mostrar solo la pregunta de asistencia, ocultar el resto
-    seccionAsistencia.classList.remove("hidden");
-    seccionPago.classList.add("hidden");
+    if (seccionPago) seccionPago.classList.add("hidden");
     if (radioSi) radioSi.checked = false;
     if (radioNo) radioNo.checked = false;
     if (consentimiento) consentimiento.checked = false;
   }
+
+  //  Scroll suave para asegurar que el usuario vea los botones en móvil
+  setTimeout(() => {
+    if (seccionAsistencia) {
+      seccionAsistencia.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, 300);
 }
 
 function formatearMonto(monto) {
